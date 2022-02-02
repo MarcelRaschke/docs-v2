@@ -92,7 +92,7 @@ using the `<username>:<password>` syntax.
 
 ## Push down optimizations
 
-Some transformations after the call to `from()` will trigger performance optimizations called push downs.
+Some transformations called after `from()` trigger performance optimizations called pushdowns.
 These optimizations are "pushed down" from Flux into the storage layer and involve utilizing some code in storage to directly apply the transformation to the data to either filter or aggregate the data.
 These happen automatically and the person writing the query doesn't have to know about the technical details, but it is helpful to know about these optimizations so you can understand why certain orders of transformations may be faster than others.
 
