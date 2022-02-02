@@ -93,23 +93,59 @@ using the `<username>:<password>` syntax.
 ## Push down optimizations
 
 Some transformations called after `from()` trigger performance optimizations called pushdowns.
-These optimizations are "pushed down" from Flux into the storage layer and involve utilizing some code in storage to directly apply the transformation to the data to either filter or aggregate the data.
-These happen automatically and the person writing the query doesn't have to know about the technical details, but it is helpful to know about these optimizations so you can understand why certain orders of transformations may be faster than others.
+These optimizations are "pushed down" from Flux into the InfluxDB storage layer and where they utilize code in storage to apply the transformation.
+Pushdowns happen automatically, but it is helpful understand how these optimizations work so you can better optimize your Flux queries.
 
-Push downs require the chain between transformations to be unbroken and exclusive.
-A `from()` that goes to multiple push down optimizations will cause none of them to be applied.
-To avoid this while allowing for code reuse, prefer invoking `from()` in a function when multiple push downs get applied.
+Pushdowns require an unbroken and exclusive chain between transformations.
+A `from()` call stored in a variable that then goes to multiple pushdowns will
+cause none of the pushdowns to be applied. For example:
+
+```js
+// Pushdowns are NOT applied
+data = from(bucket: "example-bucket")
+    |> range(start: -1h)
+
+data |> filter(fn: (r) => r._measurement == "m0") |> yield(name: "m0")
+data |> filter(fn: (r) => r._measurement == "m1") |> yield(name: "m1")
+```
+
+To reuse code and still apply pushdowns, invoke `from()` in a function and pipe-forward the output of the function into subsequent pushdowns:
+
+```js
+// Pushdowns ARE applied
+data = () => from(bucket: "example-bucket")
+    |> range(start: -1h)
+
+data() |> filter(fn: (r) => r._measurement == "m0") |> yield(name: "m0")
+data() |> filter(fn: (r) => r._measurement == "m1") |> yield(name: "m1")
+```
 
 ### Filter
 
-A `filter()` that makes a comparison to `r._measurement`, `r._field`, `r._value` or any tag value will be pushed down to the storage layer.
-Comparisons that use functions will not.
-If the function produces a static value, you can evaluate the function outside of the filter and the result will be pushed down.
-Multiple consecutive filters that would get pushed down will get merged together into a single filter that gets pushed down.
+`filter()` transformations that compare `r._measurement`, `r._field`, `r._value` or any tag value are pushed down to the storage layer.
+Comparisons that use functions do not.
+If the function produces a static value, evaluate the function outside of `filter()`.
+For example:
+
+```js\
+import "strings"
+
+// filter() is NOT pushed down
+data
+    |> filter(fn: (r) => r.example == strings.joinStr(arr: ["foo", "bar"], v: ""))
+
+// filter() is pushed down
+exVar = strings.joinStr(arr: ["foo", "bar"], v: ""))
+
+data
+    |> filter(fn: (r) => r.example == exVar)
+```
+
+Multiple consecutive `filter()` transformations that can be pushed down are merged together into a single filter that gets pushed down.
 
 ### Aggregates
 
-The following aggregates will be pushed down:
+The following aggregate transformations are pushed down:
 
 - `min()`
 - `max()`
@@ -122,7 +158,7 @@ The only exception is `mean()` which cannot be pushed down to the storage layer 
 
 ### Aggregate Window
 
-Aggregates used with `aggregateWindow()` will be pushed down.
+Aggregates used with `aggregateWindow()` are pushed down.
 Aggregates pushed down with `aggregateWindow()` are not compatible with `group()`.
 
 ## Examples
@@ -157,39 +193,39 @@ from(
 )
 ```
 
-### Query push downs
+### Utilize pushdowns in multiple queries
 
 ```js
 from(bucket: "example-bucket")
-|> range(start: -1h)
-|> filter(fn: (r) => r._measurement == "m0")
-|> filter(fn: (r) => r._field == "f0")
-|> yield(name: "filter-only")
+    |> range(start: -1h)
+    |> filter(fn: (r) => r._measurement == "m0")
+    |> filter(fn: (r) => r._field == "f0")
+    |> yield(name: "filter-only")
 
 from(bucket: "example-bucket")
-|> range(start: -1h)
-|> filter(fn: (r) => r._measurement == "m0")
-|> filter(fn: (r) => r._field == "f0")
-|> max()
-|> yield(name: "max")
+    |> range(start: -1h)
+    |> filter(fn: (r) => r._measurement == "m0")
+    |> filter(fn: (r) => r._field == "f0")
+    |> max()
+    |> yield(name: "max")
 
 from(bucket: "example-bucket")
-|> range(start: -1h)
-|> filter(fn: (r) => r._measurement == "m0")
-|> filter(fn: (r) => r._field == "f0")
-|> group(columns: ["t0"])
-|> max()
-|> yield(name: "grouped-max")
+    |> range(start: -1h)
+    |> filter(fn: (r) => r._measurement == "m0")
+    |> filter(fn: (r) => r._field == "f0")
+    |> group(columns: ["t0"])
+    |> max()
+    |> yield(name: "grouped-max")
 
 from(bucket: "example-bucket")
-|> range(start: -1h)
-|> filter(fn: (r) => r._measurement == "m0")
-|> filter(fn: (r) => r._field == "f0")
-|> aggregateWindow(every: 5m, fn: max)
-|> yield(name: "windowed-max")
+    |> range(start: -1h)
+    |> filter(fn: (r) => r._measurement == "m0")
+    |> filter(fn: (r) => r._field == "f0")
+    |> aggregateWindow(every: 5m, fn: max)
+    |> yield(name: "windowed-max")
 ```
 
-### Query from the same bucket to multiple push downs
+### Query from the same bucket to multiple pushdowns
 
 ```js
 // Use a function. If you use a variable, this will stop
