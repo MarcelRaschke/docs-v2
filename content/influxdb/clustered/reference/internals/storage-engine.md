@@ -68,7 +68,7 @@ In this process, the Ingester does the following:
 
 The Ingester can be scaled both [vertically](#vertical-scaling) and
 [horizontally](#horizontal-scaling).
-Horizontal scaling increases write throughput and is typically the most
+Vertical scaling increases write throughput and is typically the most
 effective scaling strategy for the Ingester.
 
 ### Querier
@@ -180,5 +180,11 @@ Horizontal scaling (also known as "scaling out") involves increasing the number 
 nodes or processes available to perform a given task.
 Horizontal scaling is typically used to increase the amount of workload or
 throughput a system can manage, but also provides additional redundancy and failover.
+
+{{% warn %}}
+#### Only use the AppInstance to scale component replicas
+
+Manually scaling resources may cause errors.
+{{% /warn %}}
 
 {{< html-diagram/scaling-strategy "horizontal" >}}
