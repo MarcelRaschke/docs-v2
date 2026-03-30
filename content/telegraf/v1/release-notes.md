@@ -98,10 +98,8 @@ menu:
 >
 > Telegraf v1.38.0 introduced a panic in the
 > [Heartbeat output plugin](/telegraf/v1/output-plugins/heartbeat/) that
-> prevents Telegraf from starting when the plugin is enabled. Telegraf v1.38.2
-> will include a fix, but in the meantime, to use the Heartbeat output plugin,
-> revert back to Telegraf v1.37.x _(recommended)_, use a Telegraf nightly build,
-> or build Telegraf from source.
+> prevents Telegraf from starting when the plugin is enabled. Upgrade to
+> [Telegraf v1.38.2](#v1382) to use new features added the Heartbeat output plugin.
 
 ### Important Changes
 
