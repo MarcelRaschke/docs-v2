@@ -38,7 +38,7 @@ docker run --detach \
   influxdata/influxdb3-ui \
   --mode=admin
 
-# Visit http://localhost:8888 in your browser to begin using InfluxDB 3 Explorer
+# Visit http://localhost:8080 in your browser to begin using InfluxDB 3 Explorer
 ```
 
 
