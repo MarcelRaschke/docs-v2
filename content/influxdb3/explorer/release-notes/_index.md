@@ -20,9 +20,9 @@ docker pull influxdata/influxdb3-ui
 
 #### Features
 
-- **Transform Data**: Rename measurements, rename columns, transform values (such as unit conversions), and filter rows from a dedicated Transform Data page with dry-run testing.
+- **Transform Data**: Rename tables (measurements), rename columns, transform values (such as unit conversions), and filter rows from a dedicated Transform Data page with dry-run testing.
 - **Downsample**: Define and manage downsampling rules to reduce data resolution over time.
-- **Import from InfluxDB**: Import data from an existing v1, v2, or v3 InfluxDB instance with target selection, dry-run preview, and import monitoring.
+- **Import from InfluxDB**: Import data from an existing InfluxDB v1, v2, or v3 instance with target selection, dry-run preview, and import monitoring.
 - **Table management page**: Create, manage, and delete tables in a dedicated Table Management page.
 - **Database management actions**: Manage databases from a new actions menu on a restyled Manage Databases page.
 - **Line protocol validation**: Get clearer, inline validation when writing data with line protocol.
