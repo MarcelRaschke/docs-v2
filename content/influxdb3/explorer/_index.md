@@ -33,8 +33,8 @@ docker pull influxdata/influxdb3-ui
 # Run the Docker container
 docker run --detach \
   --name influxdb3-explorer \
-  --publish 8888:80 \
-  --publish 8889:8888 \
+  --publish 8080:8080 \
+  --publish 8443:8443 \
   influxdata/influxdb3-ui \
   --mode=admin
 
