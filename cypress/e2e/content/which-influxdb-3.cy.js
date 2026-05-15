@@ -3,9 +3,10 @@
 // PR 1 scope: the canonical decision page renders correctly.
 // PR 2 scope: FAQPage JSON-LD emitted on the canonical URL.
 // PR 3 scope: /influxdb3/ hub landing is a standalone navigation page with a
-//             next-gen blurb, product children list, and callout link to the
-//             decision page. Canonical is self; no FAQ, no JSON-LD.
-// Cross-link / llms.txt assertions live with PR 4.
+//             product children list and callout link to the
+//             decision page.
+// PR 4 scope: cross-link callouts on v3 product index pages + platform FAQ
+//             cross-link Q&A (see the "Cross-link callouts" describe block).
 
 describe('Which InfluxDB 3 decision page (canonical)', function () {
   const url = '/influxdb3/which-influxdb-3/';
@@ -192,5 +193,28 @@ describe('InfluxDB 3 hub landing', function () {
         'FAQPage JSON-LD must not appear on the hub'
       ).to.have.length(0);
     });
+  });
+});
+
+describe('Cross-link callouts to the decision page', function () {
+  const productPages = [
+    '/influxdb3/core/',
+    '/influxdb3/enterprise/',
+    '/influxdb3/cloud-dedicated/',
+    '/influxdb3/cloud-serverless/',
+    '/influxdb3/clustered/',
+  ];
+
+  productPages.forEach((url) => {
+    it(`${url} links to the decision page`, function () {
+      cy.visit(url);
+      cy.get('a[href="/influxdb3/which-influxdb-3/"]').should('exist');
+    });
+  });
+
+  it('/platform/faq/ has a "Which version of InfluxDB should I use?" Q&A', function () {
+    cy.visit('/platform/faq/');
+    cy.get('h2#which-version-of-influxdb-should-i-use').should('exist');
+    cy.get('a[href="/influxdb3/which-influxdb-3/"]').should('exist');
   });
 });
